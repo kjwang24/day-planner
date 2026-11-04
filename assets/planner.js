@@ -124,7 +124,12 @@
 
   function autoGrow(textarea) {
     textarea.style.height = "auto";
-    textarea.style.height = textarea.scrollHeight + 2 + "px";
+    const border = textarea.offsetHeight - textarea.clientHeight;
+    textarea.style.height = textarea.scrollHeight + border + "px";
+  }
+
+  function growAll() {
+    document.querySelectorAll("textarea.draft, textarea.title").forEach(autoGrow);
   }
 
   function el(tag, attrs, children) {
@@ -140,9 +145,9 @@
   function renderTask(key, task, list) {
     const checkbox = el("input", { type: "checkbox", "aria-label": "Done" });
     checkbox.checked = Boolean(task.done);
-    const title = el("input", {
-      type: "text", class: "title", placeholder: "Task", "aria-label": "Task", value: task.title || "",
-    });
+    // A one-row text box that grows, so a long title wraps instead of being cut off.
+    const title = el("textarea", { class: "title", rows: "1", placeholder: "Task", "aria-label": "Task" });
+    title.value = task.title || "";
     const time = el("input", {
       type: "text", class: "time", placeholder: "time", "aria-label": "Time", value: task.time || "",
     });
@@ -154,7 +159,13 @@
       row.classList.toggle("done", task.done);
       save();
     });
-    title.addEventListener("input", () => { task.title = title.value; save(); });
+    title.addEventListener("input", () => {
+      // A pasted line break would start a hidden second line; keep each title one line of text.
+      if (title.value.includes("\n")) title.value = title.value.replace(/\s*\n+\s*/g, " ");
+      task.title = title.value;
+      save();
+      autoGrow(title);
+    });
     time.addEventListener("input", () => { task.time = time.value; save(); });
 
     title.addEventListener("keydown", (event) => {
@@ -178,6 +189,7 @@
 
   function renderTasks(key, list) {
     list.replaceChildren(...dayData(key).tasks.map((task) => renderTask(key, task, list)));
+    list.querySelectorAll("textarea.title").forEach(autoGrow);
     pruneEmpty(key);
   }
 
@@ -255,7 +267,7 @@
       render();
     });
     main.replaceChildren(...rendered.map((r) => r.section), more);
-    rendered.forEach((r) => autoGrow(r.draft));
+    growAll();
   }
 
   // Roll over at midnight (and when the page comes back after being hidden).
@@ -272,7 +284,7 @@
   });
   setInterval(checkForNewDay, 60 * 1000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) checkForNewDay(); });
-  window.addEventListener("resize", () => document.querySelectorAll("textarea.draft").forEach(autoGrow));
+  window.addEventListener("resize", growAll);
 
   render();
 })();

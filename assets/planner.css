@@ -63,12 +63,14 @@ textarea.draft {
 }
 
 textarea.draft::placeholder,
-.task input::placeholder {
+.task input::placeholder,
+.task textarea::placeholder {
   color: #bdb19c;
 }
 
 textarea.draft:focus,
-.task input:focus {
+.task input:focus,
+.task textarea:focus {
   outline: none;
 }
 
@@ -84,7 +86,7 @@ textarea.draft:focus {
 
 .task {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding: 6px 4px;
   border-bottom: 1px solid var(--line);
@@ -119,7 +121,8 @@ textarea.draft:focus {
   transform: translateY(-1px) rotate(-45deg);
 }
 
-.task input[type="text"] {
+.task input[type="text"],
+.task textarea.title {
   border: none;
   background: transparent;
   color: var(--ink);
@@ -130,6 +133,27 @@ textarea.draft:focus {
 .task .title {
   flex: 1;
   min-width: 0;
+}
+
+.task textarea.title {
+  display: block;
+  line-height: 1.5;
+  resize: none;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+/* With rows top-aligned, the one-line pieces sit level with the title's first line. */
+.task input[type="checkbox"] {
+  margin-top: 6px;
+}
+
+.task .remove {
+  margin-top: 4px;
+}
+
+.task .time {
+  margin-top: 1px;
 }
 
 .task .time {
@@ -207,4 +231,10 @@ textarea.draft:focus {
 
 .tasks:empty {
   margin-top: 8px;
+}
+
+@media (max-width: 480px) {
+  .task .time {
+    width: 76px;
+  }
 }
